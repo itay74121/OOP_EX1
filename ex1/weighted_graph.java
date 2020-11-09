@@ -24,7 +24,7 @@ public interface weighted_graph {
      */
     public boolean hasEdge(int node1, int node2);
     /**
-     * return the weight if the edge (node1, node1). In case
+     * return the weight if the edge (node1, node2). In case
      * there is no such edge - should return -1
      * Note: this method should run in O(1) time.
      * @param node1
