@@ -1,8 +1,5 @@
 package ex1;
 
-import org.w3c.dom.Node;
-
-import java.security.PrivilegedAction;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
