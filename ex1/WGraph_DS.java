@@ -1,9 +1,7 @@
 package ex1;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
+
+import java.util.*;
 
 public class WGraph_DS implements weighted_graph
 {
@@ -72,7 +70,8 @@ public class WGraph_DS implements weighted_graph
     }
 
     @Override
-    public node_info getNode(int key) {
+    public node_info getNode(int key)
+    {
         return nodes.get(key);
     }
 
@@ -87,52 +86,89 @@ public class WGraph_DS implements weighted_graph
     }
 
     @Override
-    public double getEdge(int node1, int node2) {
+    public double getEdge(int node1, int node2)
+    {
         NodeInfo n1 = (NodeInfo) getNode(node1);
         return n1.getweight(node2); // returns -1 if they are not connected.
     }
+
 
     @Override
     public void addNode(int key)
     {
         NodeInfo temp = new NodeInfo(key,0,"");
-        nodes.put(key,temp);
+        nodes.put(temp.getKey(),temp);
+        MC++;
     }
 
     @Override
     public void connect(int node1, int node2, double w)
     {
+        if (node1 == node2)
+            return;
         if (getNode(node1)==null|| getNode(node2)==null)
             return;
         NodeInfo n1 = (NodeInfo)getNode(node1);
         if (n1.hasNi(node2))
         {
             n1.updateWeight(node2,w);
+            MC++;
         }
         else
         {
             n1.addNi(getNode(node2),w);
+            MC++;
+            edgesize++;
         }
     }
 
     @Override
     public Collection<node_info> getV() {
-        return null;
+        return nodes.values();
     }
 
     @Override
-    public Collection<node_info> getV(int node_id) {
-        return null;
+    public Collection<node_info> getV(int node_id)
+    {
+        NodeInfo n = (NodeInfo) getNode(node_id);
+        if (n==null)
+            return null;
+        else
+        {
+            ArrayList<node_info> ret = new ArrayList<node_info>();
+            for(node_info t:n.getNi().values())
+            {
+                ret.add(t);
+            }
+            return ret;
+        }
     }
 
     @Override
     public node_info removeNode(int key) {
-        return null;
+        if(nodes.containsKey(key))
+        {
+            NodeInfo n = (NodeInfo) getNode(key);
+            edgesize -= n.getNi().size();
+            MC += n.getNi().size()+1;
+            n.destroyConnections();
+            nodes.remove(n.getKey());
+            return n;
+        }
+        else
+            return null;
     }
 
     @Override
-    public void removeEdge(int node1, int node2) {
-
+    public void removeEdge(int node1, int node2)
+    {
+        if (getNode(node1)==null || getNode(node2)==null)
+            return;
+        NodeInfo n1 = (NodeInfo) getNode(node1);
+        if (n1.hasNi(node2))
+        {
+            n1.removeNi(node2);
+        }
     }
 
     @Override
@@ -149,8 +185,26 @@ public class WGraph_DS implements weighted_graph
     public int getMC() {
         return MC;
     }
+    public String toString()
+    {
+        String ret = "";
+        for(node_info n: getV())
+        {
+            NodeInfo t1 = (NodeInfo) n;
+            ret += t1;
+            ret += "]   [ ";
+            for(node_info j: getV(t1.getKey()))
+            {
+                NodeInfo t2 = (NodeInfo) j;
+                ret += t2;
+                ret += "("+t2.getweight(n.getKey())+")] ";
+            }
+            ret += " ]\n";
+        }
+        return ret;
+    }
 
-    class NodeInfo implements node_info {
+    public class NodeInfo implements node_info {
         private int key;
         private double tag;
         private String info;
@@ -219,7 +273,8 @@ public class WGraph_DS implements weighted_graph
         }
 
         public boolean addNi(node_info other, double otherweight) {
-            if (!neighbors.containsKey(other.getKey()) && !neighborsweights.containsKey(other.getKey())) {
+            if (!neighbors.containsKey(other.getKey()) && !neighborsweights.containsKey(other.getKey()))
+            {
                 // inseret other into hashmap and weight hashmap
                 neighbors.put(other.getKey(), other);
                 neighborsweights.put(other.getKey(), otherweight);
@@ -236,10 +291,15 @@ public class WGraph_DS implements weighted_graph
 
         public boolean removeNi(node_info other)
         {
+            if (other == null)
+                return false;
             if (neighbors.containsKey(other.getKey()) && neighborsweights.containsKey(other.getKey()))
             {
                 neighbors.remove(other.getKey());
                 neighborsweights.remove(other.getKey());
+                NodeInfo t = (NodeInfo) other;
+                t.getNi().remove(getKey());
+                t.getNiWeights().remove(getKey());
                 return true;
             }
             else
@@ -247,20 +307,30 @@ public class WGraph_DS implements weighted_graph
                 return false;
             }
         }
+        public boolean removeNi(int key)
+        {
+            node_info n = neighbors.get(key);
+            return removeNi(n);
+        }
+
         public boolean hasNi(node_info other)
         {
             return neighborsweights.containsKey(other.getKey()) && neighbors.containsKey(other.getKey());
         }
+
         public boolean hasNi(int key)
         {
             return neighborsweights.containsKey(key) && neighbors.containsKey(key);
         }
-        public double getweight(int key){
+
+        public double getweight(int key)
+        {
             if (neighborsweights.containsKey(key))
                 return neighborsweights.get(key);
             else
                 return -1;
         }
+
         public boolean updateWeight(int key,double weight)
         {
             if (neighbors.containsKey(key))
@@ -270,6 +340,19 @@ public class WGraph_DS implements weighted_graph
             }
             else
                 return false;
+        }
+
+        public void destroyConnections()
+        {
+            for(node_info t: getV(getKey()))
+            {
+                removeNi(t);
+            }
+        }
+
+        public String toString()
+        {
+            return "[ Node"+getKey();
         }
 
     }
