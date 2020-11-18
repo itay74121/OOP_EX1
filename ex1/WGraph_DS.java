@@ -1,14 +1,15 @@
 package ex1;
 
 
+import java.io.Serializable;
+import java.time.temporal.WeekFields;
 import java.util.*;
 
-public class WGraph_DS implements weighted_graph
+public class WGraph_DS implements weighted_graph,Serializable
 {
 
     private HashSet<Integer> usedkeys;
     private int numofnodes;
-    private int keyswap ;
     private HashMap<Integer,node_info> nodes;
     private int edgesize;
     private int MC;
@@ -20,7 +21,6 @@ public class WGraph_DS implements weighted_graph
         MC = 0;
         usedkeys = new HashSet<Integer>();
         numofnodes = 0;
-        keyswap = 0;
 
     }
 
@@ -28,6 +28,8 @@ public class WGraph_DS implements weighted_graph
     {
         if (g!=null)
         {
+            usedkeys = new HashSet<Integer>();
+            nodes = new HashMap<Integer, node_info>();
             // phase 1: copy nodes
             for(node_info n :g.nodes.values())
             {
@@ -50,7 +52,6 @@ public class WGraph_DS implements weighted_graph
             edgesize = g.edgesize;
             MC = g.MC;
             numofnodes = g.numofnodes;
-            keyswap = g.keyswap;
             Iterator<Integer> iter = g.usedkeys.iterator();
             while (iter.hasNext())
             {
@@ -64,7 +65,6 @@ public class WGraph_DS implements weighted_graph
             usedkeys = new HashSet<Integer>();
             numofnodes = 0;
             edgesize = 0;
-            keyswap = 0;
             MC = 0;
         }
     }
@@ -96,6 +96,8 @@ public class WGraph_DS implements weighted_graph
     @Override
     public void addNode(int key)
     {
+        if (usedkeys.contains(key))
+            return;
         NodeInfo temp = new NodeInfo(key,0,"");
         nodes.put(temp.getKey(),temp);
         MC++;
@@ -192,19 +194,39 @@ public class WGraph_DS implements weighted_graph
         {
             NodeInfo t1 = (NodeInfo) n;
             ret += t1;
-            ret += "]   [ ";
+            ret += "[ ";
             for(node_info j: getV(t1.getKey()))
             {
                 NodeInfo t2 = (NodeInfo) j;
                 ret += t2;
-                ret += "("+t2.getweight(n.getKey())+")] ";
+                ret += "("+t2.getweight(n.getKey())+")";
             }
             ret += " ]\n";
         }
         return ret;
     }
 
-    public class NodeInfo implements node_info {
+    public boolean equals(Object o)
+    {
+        WGraph_DS other = (WGraph_DS)o;
+        if(other.edgeSize()!=edgeSize() || nodeSize()!=other.nodeSize())
+            return false;
+        //phase1:
+        for (node_info n: other.nodes.values())
+        {
+            if(getNode(n.getKey())==null) return false;
+            if(!((NodeInfo)getNode(n.getKey())).equals(n)) return false;
+        }
+        //phase2:
+        for (node_info n: nodes.values())
+        {
+            if(other.getNode(n.getKey())==null) return false;
+            if(!((NodeInfo)other.getNode(n.getKey())).equals(n)) return false;
+        }
+        return true;
+
+    }
+    public class NodeInfo implements node_info, Serializable {
         private int key;
         private double tag;
         private String info;
@@ -216,15 +238,6 @@ public class WGraph_DS implements weighted_graph
         }
 
         public NodeInfo(int key, double tag, String info) {
-            boolean enter = false;
-            if (usedkeys.contains(key)) {
-                enter = true;
-                while (usedkeys.contains(keyswap)) {
-                    keyswap++;
-                }
-            }
-            if (enter)
-                key = keyswap;
             usedkeys.add(key);
             setKey(key);
             setTag(tag);
@@ -233,6 +246,19 @@ public class WGraph_DS implements weighted_graph
             this.neighborsweights = new HashMap<Integer, Double>();
             numofnodes++;
 
+        }
+
+        public boolean equals(Object o)
+        {
+            NodeInfo other = (NodeInfo)o;
+            if (other.getKey() != getKey())
+                return false;
+            for(node_info n:other.getNi().values())
+            {
+                if(!hasNi(n.getKey())) return false; // if its has it as a neighbor
+                if (other.getweight(n.getKey())!=getweight(n.getKey())) return false; // check if
+            }
+            return true;
         }
 
         public HashMap<Integer, node_info> getNi() {
@@ -336,6 +362,7 @@ public class WGraph_DS implements weighted_graph
             if (neighbors.containsKey(key))
             {
                 neighborsweights.put(key,weight);
+                ((NodeInfo)neighbors.get(key)).neighborsweights.put(getKey(),weight);
                 return true;
             }
             else
@@ -352,7 +379,7 @@ public class WGraph_DS implements weighted_graph
 
         public String toString()
         {
-            return "[ Node"+getKey();
+            return "[Node "+getKey()+"]";
         }
 
     }

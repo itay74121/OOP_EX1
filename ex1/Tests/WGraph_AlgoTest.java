@@ -1,19 +1,22 @@
-package ex1;
+package ex1.Tests;
+
+import ex1.*;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class WGraph_AlgoTest {
-
+    private WGraph_Algo wga = new WGraph_Algo();
     @org.junit.jupiter.api.Test
     void copy()
     {
+
     }
 
     @org.junit.jupiter.api.Test
     void isConnected()
     {
-        WGraph_DS g = WGraph_DSUtility.graph_creator(10,9,1);
-        System.out.println(g);
     }
 
     @org.junit.jupiter.api.Test
@@ -22,13 +25,19 @@ class WGraph_AlgoTest {
 
     @org.junit.jupiter.api.Test
     void shortestPath() {
+
     }
 
     @org.junit.jupiter.api.Test
     void save() {
+
     }
 
     @org.junit.jupiter.api.Test
     void load() {
+    }
+    @org.junit.jupiter.api.Test
+    void save_load() {
+
     }
 }

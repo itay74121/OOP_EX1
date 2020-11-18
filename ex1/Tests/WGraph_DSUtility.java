@@ -1,6 +1,12 @@
-package ex1;
+package ex1.Tests;
 
 
+import ex1.WGraph_DS;
+import ex1.node_info;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Random;
@@ -13,18 +19,52 @@ public final class WGraph_DSUtility
     {
         // no contructor
     }
-    public static WGraph_DS graph_creator(int v_size, int e_size,int seed)
+
+    public static boolean writetofile(String filename, String text)
     {
+        try {
+            File f = new File(filename);
+            if (f.exists()&&f.canWrite())
+            {
+                FileWriter myWriter = new FileWriter(f, true);
+                myWriter.write(text+"\n");
+                myWriter.close();
+            }
+            else
+            {
+                f.createNewFile();
+                FileWriter myWriter = new FileWriter(f, true);
+                myWriter.write(text+"\n");
+                myWriter.close();
+            }
+            return true;
+        } catch (IOException e) {
+            System.out.println("An error occurred.");
+            e.printStackTrace();
+            return false;
+        }
+
+    }
+
+    public static WGraph_DS graph_creator(int v_size, int e_size, int seed)
+    {
+        String path = "c:/users/itay/ideaprojects/OOP_EX1/src/ex1/log.txt";
+        File f = new File(path);
+        if(f.exists())
+            f.delete();
+
         WGraph_DS g = new WGraph_DS();
         _rnd = new Random(seed);
         for (int i = 0; i < v_size; i++) {
-            g.addNode(0);
+            g.addNode(i);
         }
         int[] nodes = nodes(g);
         while(g.edgeSize() < e_size) {
+
             int a = nextRnd(0,v_size);
             int b = nextRnd(0,v_size);
             int c = nextRnd(0,1000);
+            writetofile(path,a+" "+b+" "+c);
             int i = nodes[a];
             int j = nodes[b];
             g.connect(i,j,c);
